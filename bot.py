@@ -3,6 +3,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKe
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 import os
 from dotenv import load_dotenv
+import threading
+from flask import Flask
 
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -345,6 +347,15 @@ async def handle_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=get_main_menu(context)
     )
 
+def run_flask():
+    app = Flask(__name__)
+
+    @app.route('/')
+    def home():
+        return "Bot is running!"
+
+    app.run(host="0.0.0.0", port=10000)
+
 def main() -> None:
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
@@ -359,4 +370,5 @@ def main() -> None:
     application.run_polling()
 
 if __name__ == "__main__":
+    threading.Thread(target=run_flask, daemon=True).start()
     main() 
